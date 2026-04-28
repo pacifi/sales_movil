@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sales/models/category.dart';
+import 'package:sales/screens/category/form.dart';
 import 'package:sales/services/category_service.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
@@ -52,12 +53,46 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(children: [Text("ID: "), Text(snapshot.data!.id.toString())]),
+                Row(
+                  children: [Text("ID: "), Text(snapshot.data!.id.toString())],
+                ),
                 Row(children: [Text("Nombre: "), Text(snapshot.data!.name)]),
                 Row(
                   children: [
                     Text("Descripción: "),
                     Text(snapshot.data!.description),
+                  ],
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.red),
+                      ),
+                      onPressed: () async {
+                        await _service.delete(snapshot.data!.id);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Eliminar",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CategoryFormScreen(category: snapshot.data),
+                          ),
+                        );
+                        setState(() {
+                          category = _service.getById(widget.idCategory);
+                        });
+                      },
+                      child: Text("Editar"),
+                    ),
                   ],
                 ),
               ],

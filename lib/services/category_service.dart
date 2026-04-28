@@ -4,8 +4,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
 class CategoryService {
+  final String apiUrl = "192.168.18.114:8000";
+
   Future<List<Category>> all() async {
-    var url = Uri.http('192.168.18.114:8000', '/product/categories/');
+    var url = Uri.http(apiUrl, '/product/categories/');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as List<dynamic>;
@@ -20,7 +22,7 @@ class CategoryService {
   }
 
   Future<Category> getById(int id) async {
-    var url = Uri.http('192.168.18.114:8000', '/product/categories/$id/');
+    var url = Uri.http(apiUrl, '/product/categories/$id/');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as dynamic;
@@ -33,4 +35,44 @@ class CategoryService {
     }
   }
 
+  Future<void> save(Category category) async {
+    var url = Uri.http(apiUrl, '/product/categories/');
+
+    var response = await http.post(
+      url,
+      body: convert.jsonEncode(category.toJson()),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 201) {
+      print("Guardado");
+    } else {
+      throw Exception('Error al guardar ');
+    }
+  }
+
+  Future<void> edit(int id, Category category) async {
+    var url = Uri.http(apiUrl, '/product/categories/${id}/');
+
+    var response = await http.put(
+      url,
+      body: convert.jsonEncode(category.toJson()),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      print("Guardado");
+    } else {
+      throw Exception('Error al editar ');
+    }
+  }
+
+  Future<void> delete(int id) async {
+    var url = Uri.http(apiUrl, '/product/categories/${id}/');
+
+    var response = await http.delete(url);
+    if (response.statusCode == 204) {
+      print("Eliminado");
+    } else {
+      throw Exception('Error al eliminar ');
+    }
+  }
 }

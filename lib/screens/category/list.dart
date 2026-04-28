@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sales/models/category.dart';
 import 'package:sales/screens/category/detail.dart';
+import 'package:sales/screens/category/form.dart';
 import 'package:sales/services/category_service.dart';
 
 class CategoryListScreen extends StatefulWidget {
@@ -32,6 +33,18 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         title: Text("Lista de Categorias"),
         backgroundColor: Colors.orange,
       ),
+      floatingActionButton: ElevatedButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CategoryFormScreen()),
+          );
+          setState(() {
+            categories = _service.all();
+          });
+        },
+        child: Icon(Icons.add),
+      ),
       body: FutureBuilder(
         future: categories,
         builder: (context, snapshot) {
@@ -57,8 +70,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               return ListTile(
                 title: Text(snapshot.data![index].name),
                 subtitle: Text(snapshot.data![index].description),
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => CategoryDetailScreen(
@@ -66,6 +79,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       ),
                     ),
                   );
+                  setState(() {
+                    categories = _service.all();
+                  });
                 },
               );
             },
