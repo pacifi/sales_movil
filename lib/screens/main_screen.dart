@@ -9,6 +9,9 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Sistema de Ventas")),
+      drawer: Drawer(
+
+      ),
       body: Column(
         children: [
           Row(

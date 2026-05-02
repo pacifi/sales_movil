@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 import "package:sales/models/category.dart";
-import "package:sales/services/category_service.dart";
+import "../../providers/category_provider.dart";
 
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;
@@ -14,8 +15,6 @@ class CategoryFormScreen extends StatefulWidget {
 class _CategoryFormScreenState extends State<CategoryFormScreen> {
   TextEditingController controllerName = TextEditingController();
   TextEditingController controllerDescription = TextEditingController();
-
-  CategoryService _service = CategoryService();
 
   @override
   void initState() {
@@ -54,21 +53,23 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
             ElevatedButton(
               onPressed: () async {
                 if (widget.category == null) {
-                  Category categoryAdd = Category(
-                    0,
-                    controllerName.text,
-                    controllerDescription.text,
+                  await context.read<CategoryProvider>().save(
+                    Category(
+                      0,
+                      controllerName.text,
+                      controllerDescription.text,
+                    ),
                   );
-                  await _service.save(categoryAdd);
                 } else {
-                  Category categoryUpd = Category(
+                  await context.read<CategoryProvider>().edit(
                     widget.category!.id,
-                    controllerName.text,
-                    controllerDescription.text,
+                    Category(
+                      widget.category!.id,
+                      controllerName.text,
+                      controllerDescription.text,
+                    ),
                   );
-                  await _service.edit(widget.category!.id, categoryUpd);
                 }
-
                 Navigator.pop(context);
               },
               child: Text(widget.category == null ? "Crear" : "Editar"),

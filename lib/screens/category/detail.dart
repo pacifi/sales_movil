@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sales/models/category.dart';
 import 'package:sales/screens/category/form.dart';
-import 'package:sales/services/category_service.dart';
+
+import '../../providers/category_provider.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final int idCategory;
@@ -13,92 +15,60 @@ class CategoryDetailScreen extends StatefulWidget {
 }
 
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
-  late Future<Category> category;
-  CategoryService _service = CategoryService();
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    category = _service.getById(widget.idCategory);
   }
 
   @override
   Widget build(BuildContext context) {
+    final category = context.watch<CategoryProvider>().getById(
+      widget.idCategory,
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text("Detalle de Categorias"),
         backgroundColor: Colors.orange,
       ),
-      body: FutureBuilder(
-        future: category,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red, size: 40),
-                  SizedBox(height: 10),
-                  Text("Ocurrio un errpr ${snapshot.error}"),
-                ],
-              ),
-            );
-          }
-
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(children: [Text("ID: "), Text(category.id.toString())]),
+            Row(children: [Text("Nombre: "), Text(category.name)]),
+            Row(children: [Text("Descripción: "), Text(category.description)]),
+            Row(
               children: [
-                Row(
-                  children: [Text("ID: "), Text(snapshot.data!.id.toString())],
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.red),
+                  ),
+                  onPressed: () async {
+                    await context.read<CategoryProvider>().delete(category.id);
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "Eliminar",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                Row(children: [Text("Nombre: "), Text(snapshot.data!.name)]),
-                Row(
-                  children: [
-                    Text("Descripción: "),
-                    Text(snapshot.data!.description),
-                  ],
-                ),
-                Row(
-                  children: [
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Colors.red),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CategoryFormScreen(category: category),
                       ),
-                      onPressed: () async {
-                        await _service.delete(snapshot.data!.id);
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        "Eliminar",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CategoryFormScreen(category: snapshot.data),
-                          ),
-                        );
-                        setState(() {
-                          category = _service.getById(widget.idCategory);
-                        });
-                      },
-                      child: Text("Editar"),
-                    ),
-                  ],
+                    );
+                  },
+                  child: Text("Editar"),
                 ),
               ],
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

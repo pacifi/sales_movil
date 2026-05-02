@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sales/models/category.dart';
+import 'package:provider/provider.dart';
+import 'package:sales/providers/category_provider.dart';
 import 'package:sales/screens/category/detail.dart';
 import 'package:sales/screens/category/form.dart';
-import 'package:sales/services/category_service.dart';
 
 class CategoryListScreen extends StatefulWidget {
   const CategoryListScreen({super.key});
@@ -12,22 +12,17 @@ class CategoryListScreen extends StatefulWidget {
 }
 
 class _CategoryListScreenState extends State<CategoryListScreen> {
-  final CategoryService _service = CategoryService();
-  late Future<List<Category>> categories;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    categories = _service.all();
-
-    //    initState()  → super primero, luego tu código
-    //    dispose()    → tu código primero, luego super
-    //    build()      → no se llama super
+    context.read<CategoryProvider>().loadAll();
   }
 
   @override
   Widget build(BuildContext context) {
+    final categories = context.watch<CategoryProvider>().categories;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Lista de Categorias"),
@@ -39,51 +34,26 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             context,
             MaterialPageRoute(builder: (context) => CategoryFormScreen()),
           );
-          setState(() {
-            categories = _service.all();
-          });
+          context.read<CategoryProvider>().loadAll();
         },
         child: Icon(Icons.add),
       ),
-      body: FutureBuilder(
-        future: categories,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red, size: 40),
-                  SizedBox(height: 10),
-                  Text("Ocurrio un errpr ${snapshot.error}"),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(snapshot.data![index].name),
-                subtitle: Text(snapshot.data![index].description),
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CategoryDetailScreen(
-                        idCategory: snapshot.data![index].id,
-                      ),
-                    ),
-                  );
-                  setState(() {
-                    categories = _service.all();
-                  });
-                },
+      body: ListView.builder(
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(categories[index].name),
+            subtitle: Text(categories[index].description),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CategoryDetailScreen(
+                    idCategory: categories[index].id,
+                  ),
+                ),
               );
+              context.read<CategoryProvider>().loadAll();
             },
           );
         },
