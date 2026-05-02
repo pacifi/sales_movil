@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:sales/models/category.dart';
-import 'package:sales/screens/category/form.dart';
-import 'package:sales/services/category_service.dart';
+import 'package:sales/models/product.dart';
+import 'package:sales/screens/product/form.dart';
+import 'package:sales/services/product_service.dart';
 
-class CategoryDetailScreen extends StatefulWidget {
-  final int idCategory;
+class ProductDetailScreen extends StatefulWidget {
+  final int idProduct;
 
-  const CategoryDetailScreen({super.key, required this.idCategory});
+  const ProductDetailScreen({super.key, required this.idProduct});
 
   @override
-  State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
-  late Future<Category> category;
-  CategoryService _service = CategoryService();
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  late Future<Product> product;
+  final ProductService _service = ProductService();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    category = _service.getById(widget.idCategory);
+    product = _service.getById(widget.idProduct);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Detalle de Categorias"),
+        title: Text("Detalle de Products"),
         backgroundColor: Colors.orange,
       ),
       body: FutureBuilder(
-        future: category,
+        future: product,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
@@ -84,11 +84,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                CategoryFormScreen(category: snapshot.data),
+                                ProductFormScreen(product: snapshot.data),
                           ),
                         );
                         setState(() {
-                          category = _service.getById(widget.idCategory);
+                          product = _service.getById(widget.idProduct);
                         });
                       },
                       child: Text("Editar"),

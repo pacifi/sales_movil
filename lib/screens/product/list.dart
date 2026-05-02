@@ -1,52 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:sales/models/category.dart';
-import 'package:sales/screens/category/detail.dart';
-import 'package:sales/screens/category/form.dart';
-import 'package:sales/services/category_service.dart';
+import 'package:sales/screens/product/form.dart';
+import 'package:sales/services/product_service.dart';
 
-class CategoryListScreen extends StatefulWidget {
-  const CategoryListScreen({super.key});
+import '../../models/product.dart';
+import 'detail.dart';
+
+class ProductListScreen extends StatefulWidget {
+  const ProductListScreen({super.key});
 
   @override
-  State<CategoryListScreen> createState() => _CategoryListScreenState();
+  State<ProductListScreen> createState() => _ProductListScreenState();
 }
 
-class _CategoryListScreenState extends State<CategoryListScreen> {
-  final CategoryService _service = CategoryService();
-  late Future<List<Category>> categories;
+class _ProductListScreenState extends State<ProductListScreen> {
+  final ProductService _service = ProductService();
+  late Future<List<Product>> products;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    categories = _service.all();
-
-    //    initState()  → super primero, luego tu código
-    //    dispose()    → tu código primero, luego super
-    //    build()      → no se llama super
+    products = _service.all();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Lista de Categorias"),
+        title: Text("Lista de Productos"),
         backgroundColor: Colors.orange,
       ),
-      floatingActionButton: ElevatedButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CategoryFormScreen()),
-          );
-          setState(() {
-            categories = _service.all();
-          });
-        },
-        child: Icon(Icons.add),
-      ),
       body: FutureBuilder(
-        future: categories,
+        future: products,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
@@ -63,30 +48,43 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               ),
             );
           }
-
           return ListView.builder(
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(snapshot.data![index].name),
+                title: Text(
+                  "${snapshot.data![index].category.name}  - ${snapshot.data![index].name}",
+                ),
                 subtitle: Text(snapshot.data![index].description),
                 onTap: () async {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CategoryDetailScreen(
-                        idCategory: snapshot.data![index].id,
+                      builder: (context) => ProductDetailScreen(
+                        idProduct: snapshot.data![index].id,
                       ),
                     ),
                   );
                   setState(() {
-                    categories = _service.all();
+                    products = _service.all();
                   });
                 },
               );
             },
           );
         },
+      ),
+      floatingActionButton: ElevatedButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProductFormScreen()),
+          );
+          setState(() {
+            products = _service.all();
+          });
+        },
+        child: Icon(Icons.add),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sales/screens/category/list.dart';
+import 'package:sales/screens/product/list.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -23,7 +24,17 @@ class MainScreen extends StatelessWidget {
                 },
                 child: Text("Categorias"),
               ),
-              ElevatedButton(onPressed: () {}, child: Text("Productos")),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (builder) => ProductListScreen(),
+                    ),
+                  );
+                },
+                child: Text("Productos"),
+              ),
             ],
           ),
           Row(

@@ -1,47 +1,47 @@
-// /lib/services/category_service
-import 'package:sales/config/app_config.dart';
-import 'package:sales/models/category.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
-class CategoryService {
+import 'package:http/http.dart' as http;
+import 'package:sales/config/app_config.dart';
+import 'package:sales/models/product.dart';
+
+class ProductService {
   final String apiUrl = AppConfig.apiUrl;
 
-  Future<List<Category>> all() async {
-    var url = Uri.http(apiUrl, '/product/categories/');
+  Future<List<Product>> all() async {
+    var url = Uri.http(apiUrl, '/product/products/');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as List<dynamic>;
 
-      List<Category> categories = jsonResponse
-          .map((catJson) => Category.fromJson(catJson))
+      List<Product> products = jsonResponse
+          .map((catJson) => Product.fromJson(catJson))
           .toList();
-      return categories;
+      return products;
     } else {
-      throw Exception('Error al cargar categorías');
+      throw Exception('Error al cargar products');
     }
   }
 
-  Future<Category> getById(int id) async {
-    var url = Uri.http(apiUrl, '/product/categories/$id/');
+  Future<Product> getById(int id) async {
+    var url = Uri.http(apiUrl, '/product/products/$id/');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as dynamic;
 
-      Category category = Category.fromJson(jsonResponse);
+      Product product = Product.fromJson(jsonResponse);
 
-      return category;
+      return product;
     } else {
-      throw Exception('Error al cargar categorías');
+      throw Exception('Error al cargar products');
     }
   }
 
-  Future<void> save(Category category) async {
-    var url = Uri.http(apiUrl, '/product/categories/');
+  Future<void> save(Product product) async {
+    var url = Uri.http(apiUrl, '/product/products/');
 
     var response = await http.post(
       url,
-      body: convert.jsonEncode(category.toJson()),
+      body: convert.jsonEncode(product.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 201) {
@@ -51,12 +51,12 @@ class CategoryService {
     }
   }
 
-  Future<void> edit(int id, Category category) async {
-    var url = Uri.http(apiUrl, '/product/categories/${id}/');
+  Future<void> edit(int id, Product product) async {
+    var url = Uri.http(apiUrl, '/product/products/${id}/');
 
     var response = await http.put(
       url,
-      body: convert.jsonEncode(category.toJson()),
+      body: convert.jsonEncode(product.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -67,7 +67,7 @@ class CategoryService {
   }
 
   Future<void> delete(int id) async {
-    var url = Uri.http(apiUrl, '/product/categories/${id}/');
+    var url = Uri.http(apiUrl, '/product/products/${id}/');
 
     var response = await http.delete(url);
     if (response.statusCode == 204) {
