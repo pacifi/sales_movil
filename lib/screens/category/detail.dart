@@ -17,7 +17,6 @@ class CategoryDetailScreen extends StatefulWidget {
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -26,6 +25,23 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     final category = context.watch<CategoryProvider>().getById(
       widget.idCategory,
     );
+
+/*
+    final categories = context.watch<CategoryProvider>().categories;
+
+    if (categories.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Detalle de Categorias"),
+          backgroundColor: Colors.orange,
+        ),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final category = context.read<CategoryProvider>().getById(widget.idCategory);
+*/
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Detalle de Categorias"),
