@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sales/screens/category/list.dart';
+import 'package:sales/screens/client/list.dart';
 import 'package:sales/screens/product/list.dart';
 
 class MainScreen extends StatelessWidget {
@@ -9,42 +10,52 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sistema de Ventas"),
+        title: const Text('Sistema de Ventas'),
         backgroundColor: Colors.orange,
       ),
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(color: Colors.orange),
               child: Text(
-                "Sistema de Ventas",
+                'Sistema de Ventas',
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.category),
-              title: Text("Categorías"),
+              leading: const Icon(Icons.category),
+              title: const Text('Categorías'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => CategoryListScreen(),
+                  builder: (context) => const CategoryListScreen(),
                 ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.shopping_bag),
-              title: Text("Productos"),
+              leading: const Icon(Icons.shopping_bag),
+              title: const Text('Productos'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => ProductListScreen(),
+                  builder: (context) => const ProductListScreen(),
                 ));
               },
             ),
             ListTile(
-              leading: Icon(Icons.point_of_sale),
-              title: Text("Ventas"),
+              leading: const Icon(Icons.people),
+              title: const Text('Clientes'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => const ClientListScreen(),
+                ));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.point_of_sale),
+              title: const Text('Ventas'),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -52,8 +63,8 @@ class MainScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: Center(
-        child: Text("Bienvenido al Sistema de Ventas"),
+      body: const Center(
+        child: Text('Bienvenido al Sistema de Ventas'),
       ),
     );
   }
