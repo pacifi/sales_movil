@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sales/models/category.dart';
 import 'package:sales/models/product.dart';
-import 'package:sales/services/product_service.dart';
-
-import '../../models/category.dart';
-import '../../services/category_service.dart';
+import 'package:sales/providers/category_provider.dart';
+import 'package:sales/providers/product_provider.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final Product? product;
@@ -15,11 +15,6 @@ class ProductFormScreen extends StatefulWidget {
 }
 
 class _ProductFormScreenState extends State<ProductFormScreen> {
-  final CategoryService _serviceCategory = CategoryService();
-  late Future<List<Category>> categories;
-
-  final ProductService _service = ProductService();
-
   TextEditingController controllerName = TextEditingController();
   TextEditingController controllerDescription = TextEditingController();
   TextEditingController controllerPrice = TextEditingController();
@@ -27,9 +22,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    categories = _serviceCategory.all();
+    context.read<CategoryProvider>().loadAll();
 
     final product = widget.product;
     if (product != null) {
@@ -40,38 +34,50 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (selectedCategory == null) {
+      final categories = context.read<CategoryProvider>().categories;
+      if (categories.isNotEmpty) {
+        selectedCategory = widget.product != null
+            ? categories.firstWhere(
+              (cat) => cat.id == widget.product!.category.id,
+          orElse: () => categories.first,
+        )
+            : categories.first;
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final categories = context.watch<CategoryProvider>().categories;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Formulario"), backgroundColor: Colors.orange),
+      appBar: AppBar(
+        title: Text("Formulario de Producto"),
+        backgroundColor: Colors.orange,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            FutureBuilder(
-              future: categories,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return CircularProgressIndicator();
-                if (selectedCategory == null && snapshot.hasData && widget.product != null) {
-                  selectedCategory = snapshot.data!.firstWhere(
-                        (cat) => cat.id == widget.product!.category.id,
-                    orElse: () => snapshot.data!.first,
-                  );
-                }
-
-                return DropdownButton(
-                  value: selectedCategory,
-                  items: snapshot.data!
-                      .map(
-                        (cat) =>
-                            DropdownMenuItem(value: cat, child: Text(cat.name)),
-                      )
-                      .toList(),
-                  onChanged: (cat) => setState(() {
-                    selectedCategory = cat;
-                  }),
-                );
-              },
-            ),
+            if (categories.isEmpty)
+              CircularProgressIndicator()
+            else
+              DropdownButton(
+                value: selectedCategory,
+                items: categories
+                    .map((cat) => DropdownMenuItem(
+                  value: cat,
+                  child: Text(cat.name),
+                ))
+                    .toList(),
+                onChanged: (cat) => setState(() {
+                  selectedCategory = cat;
+                }),
+              ),
+            SizedBox(height: 10),
             TextField(
               controller: controllerName,
               decoration: InputDecoration(
@@ -95,28 +101,33 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
+            SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () async {
+              onPressed: selectedCategory == null
+                  ? null
+                  : () async {
                 if (widget.product == null) {
-                  Product productAdd = Product(
-                    0,
-                    controllerName.text,
-                    double.parse(controllerPrice.text),
-                    controllerDescription.text,
-                    selectedCategory!,
+                  await context.read<ProductProvider>().save(
+                    Product(
+                      0,
+                      controllerName.text,
+                      double.parse(controllerPrice.text),
+                      controllerDescription.text,
+                      selectedCategory!,
+                    ),
                   );
-                  await _service.save(productAdd);
                 } else {
-                  Product productUpd = Product(
+                  await context.read<ProductProvider>().edit(
                     widget.product!.id,
-                    controllerName.text,
-                    double.parse(controllerPrice.text),
-                    controllerDescription.text,
-                    selectedCategory!,
+                    Product(
+                      widget.product!.id,
+                      controllerName.text,
+                      double.parse(controllerPrice.text),
+                      controllerDescription.text,
+                      selectedCategory!,
+                    ),
                   );
-                  await _service.edit(widget.product!.id, productUpd);
                 }
-
                 Navigator.pop(context);
               },
               child: Text(widget.product == null ? "Crear" : "Editar"),

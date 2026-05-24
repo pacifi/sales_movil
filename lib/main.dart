@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sales/providers/category_provider.dart';
+import 'package:sales/providers/product_provider.dart';
 import 'package:sales/screens/main_screen.dart';
 
 void main() {
@@ -12,9 +13,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => CategoryProvider(),
-      child: MaterialApp(debugShowCheckedModeBanner: false, home: MainScreen()),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => CategoryProvider()),
+        ChangeNotifierProvider(create: (context) => ProductProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: MainScreen(),
+      ),
     );
   }
 }
