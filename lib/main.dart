@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sales/providers/category_provider.dart';
 import 'package:sales/providers/client_provider.dart';
 import 'package:sales/providers/product_provider.dart';
-import 'package:sales/screens/main_screen.dart';
+import 'package:sales/router/app_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,13 +16,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => CategoryProvider()),
-        ChangeNotifierProvider(create: (context) => ProductProvider()),
-        ChangeNotifierProvider(create: (context) => ClientProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => ClientProvider()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        home: MainScreen(),
+        routerConfig: appRouter,
       ),
     );
   }

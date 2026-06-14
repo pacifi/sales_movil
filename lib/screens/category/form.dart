@@ -1,7 +1,8 @@
-import "package:flutter/material.dart";
-import "package:provider/provider.dart";
-import "package:sales/models/category.dart";
-import "../../providers/category_provider.dart";
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:sales/models/category.dart';
+import '../../providers/category_provider.dart';
 
 class CategoryFormScreen extends StatefulWidget {
   final Category? category;
@@ -13,66 +14,94 @@ class CategoryFormScreen extends StatefulWidget {
 }
 
 class _CategoryFormScreenState extends State<CategoryFormScreen> {
-  TextEditingController controllerName = TextEditingController();
-  TextEditingController controllerDescription = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  String _name = '';
+  String _description = '';
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    final category = widget.category;
-    if (category != null) {
-      controllerName.text = category.name;
-      controllerDescription.text = category.description;
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => _isLoading = true);
+    try {
+      final provider = context.read<CategoryProvider>();
+      if (widget.category == null) {
+        await provider.save(Category(0, _name, _description));
+      } else {
+        await provider.edit(
+          widget.category!.id,
+          Category(widget.category!.id, _name, _description),
+        );
+      }
+      if (context.mounted) context.pop();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Formulario"), backgroundColor: Colors.orange),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           children: [
-            TextField(
-              controller: controllerName,
-              decoration: InputDecoration(
-                labelText: "Nombre",
+            TextFormField(
+              initialValue: widget.category?.name ?? '',
+              decoration: const InputDecoration(
+                labelText: 'Nombre',
                 border: OutlineInputBorder(),
               ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: controllerDescription,
-              decoration: InputDecoration(
-                labelText: "Descripción",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (widget.category == null) {
-                  await context.read<CategoryProvider>().save(
-                    Category(
-                      0,
-                      controllerName.text,
-                      controllerDescription.text,
-                    ),
-                  );
-                } else {
-                  await context.read<CategoryProvider>().edit(
-                    widget.category!.id,
-                    Category(
-                      widget.category!.id,
-                      controllerName.text,
-                      controllerDescription.text,
-                    ),
-                  );
+              textCapitalization: TextCapitalization.sentences,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'El nombre es requerido';
                 }
-                Navigator.pop(context);
+                if (value.trim().length < 2) {
+                  return 'El nombre debe tener al menos 2 caracteres';
+                }
+                return null;
               },
-              child: Text(widget.category == null ? "Crear" : "Editar"),
+              onSaved: (value) => _name = value!.trim(),
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: widget.category?.description ?? '',
+              decoration: const InputDecoration(
+                labelText: 'Descripción',
+                border: OutlineInputBorder(),
+              ),
+              textCapitalization: TextCapitalization.sentences,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'La descripción es requerida';
+                }
+                return null;
+              },
+              onSaved: (value) => _description = value!.trim(),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : Text(widget.category == null ? 'Crear' : 'Editar'),
+              ),
             ),
           ],
         ),

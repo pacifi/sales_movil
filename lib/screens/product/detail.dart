@@ -1,67 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:sales/screens/product/form.dart';
 import '../../providers/product_provider.dart';
 
-class ProductDetailScreen extends StatefulWidget {
+class ProductDetailScreen extends StatelessWidget {
   final int idProduct;
 
   const ProductDetailScreen({super.key, required this.idProduct});
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
-}
-
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
-
-  @override
   Widget build(BuildContext context) {
-    final product = context.watch<ProductProvider>().getById(widget.idProduct);
+    final product = context.watch<ProductProvider>().getById(idProduct);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Detalle de Producto"),
-        backgroundColor: Colors.orange,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(children: [Text("ID: "), Text(product.id.toString())]),
-            Row(children: [Text("Nombre: "), Text(product.name)]),
-            Row(children: [Text("Categoría: "), Text(product.category.name)]),
-            Row(children: [Text("Precio: "), Text(product.price.toString())]),
-            Row(children: [Text("Descripción: "), Text(product.description)]),
-            Row(
-              children: [
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.red),
-                  ),
-                  onPressed: () async {
-                    await context.read<ProductProvider>().delete(product.id);
-                    Navigator.pop(context);
-                  },
-                  child: Text(
-                    "Eliminar",
-                    style: TextStyle(color: Colors.white),
-                  ),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('ID: ${product.id}'),
+          Text('Nombre: ${product.name}'),
+          Text('Categoría: ${product.category.name}'),
+          Text('Precio: S/ ${product.price}'),
+          Text('Descripción: ${product.description}'),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              ElevatedButton(
+                style: const ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.red),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductFormScreen(product: product),
-                      ),
-                    );
-                  },
-                  child: Text("Editar"),
+                onPressed: () async {
+                  await context.read<ProductProvider>().delete(product.id);
+                  if (context.mounted) context.pop();
+                },
+                child: const Text(
+                  'Eliminar',
+                  style: TextStyle(color: Colors.white),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () => context.push(
+                  '/products/form',
+                  extra: product,
+                ),
+                child: const Text('Editar'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

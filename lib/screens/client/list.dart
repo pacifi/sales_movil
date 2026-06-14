@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sales/providers/client_provider.dart';
-import 'package:sales/screens/client/form.dart';
 
 class ClientListScreen extends StatefulWidget {
   const ClientListScreen({super.key});
@@ -21,11 +21,8 @@ class _ClientListScreenState extends State<ClientListScreen> {
 
   Future<void> _sincronizar() async {
     setState(() => _syncing = true);
-
     final result = await context.read<ClientProvider>().sincronizar();
-
     if (!mounted) return;
-
     setState(() => _syncing = false);
 
     showDialog(
@@ -44,7 +41,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Cerrar'),
           ),
         ],
@@ -60,11 +57,11 @@ class _ClientListScreenState extends State<ClientListScreen> {
         content: const Text('¿Estás seguro? Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => context.pop(false),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => context.pop(true),
             child: const Text(
               'Eliminar',
               style: TextStyle(color: Colors.red),
@@ -81,32 +78,31 @@ class _ClientListScreenState extends State<ClientListScreen> {
     final clients = context.watch<ClientProvider>().clients;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lista de Clientes'),
-        backgroundColor: Colors.orange,
-        actions: [
-          _syncing
-              ? const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: CircularProgressIndicator(color: Colors.white),
-          )
-              : IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sincronizar',
-            onPressed: _sincronizar,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'sync',
+            onPressed: _syncing ? null : _sincronizar,
+            backgroundColor: Colors.blue,
+            child: _syncing
+                ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+                : const Icon(Icons.sync),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: 'add',
+            onPressed: () => context.push('/clients/form'),
+            child: const Icon(Icons.add),
           ),
         ],
-      ),
-      floatingActionButton: ElevatedButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ClientFormScreen()),
-          );
-          if (!mounted) return;
-          context.read<ClientProvider>().loadAll();
-        },
-        child: const Icon(Icons.add),
       ),
       body: clients.isEmpty
           ? const Center(child: Text('No hay clientes registrados'))
@@ -134,17 +130,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
               ),
               title: Text(client.name),
               subtitle: Text(client.documentNumber),
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ClientFormScreen(client: client),
-                  ),
-                );
-                if (!mounted) return;
-                context.read<ClientProvider>().loadAll();
-              },
+              onTap: () => context.push('/clients/form', extra: client),
             ),
           );
         },

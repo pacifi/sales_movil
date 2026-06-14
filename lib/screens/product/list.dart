@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sales/providers/product_provider.dart';
-import 'package:sales/screens/product/detail.dart';
-import 'package:sales/screens/product/form.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -12,7 +11,6 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -24,37 +22,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final products = context.watch<ProductProvider>().products;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Lista de Productos"),
-        backgroundColor: Colors.orange,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/products/form'),
+        child: const Icon(Icons.add),
       ),
-      floatingActionButton: ElevatedButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProductFormScreen()),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-      body: ListView.builder(
+      body: products.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
         itemCount: products.length,
         itemBuilder: (context, index) {
+          final product = products[index];
           return ListTile(
-            title: Text(
-              "${products[index].category.name} - ${products[index].name}",
-            ),
-            subtitle: Text(products[index].description),
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailScreen(
-                    idProduct: products[index].id,
-                  ),
-                ),
-              );
-            },
+            title: Text('${product.category.name} — ${product.name}'),
+            subtitle: Text(product.description),
+            onTap: () => context.push('/products/${product.id}'),
           );
         },
       ),
