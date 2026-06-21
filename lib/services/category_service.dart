@@ -1,4 +1,11 @@
-// /lib/services/category_service
+// lib/services/category_service.dart
+//
+// Cambio respecto a la versión anterior: todos los métodos reciben el token
+// como parámetro String y lo inyectan en el header Authorization.
+// Los services no leen el AuthProvider directamente — el provider o screen
+// que invoca el service es responsable de pasar el token.
+// Esto mantiene los services testeables e independientes del árbol de widgets.
+
 import 'package:sales/config/app_config.dart';
 import 'package:sales/models/category.dart';
 import 'package:http/http.dart' as http;
@@ -7,73 +14,63 @@ import 'dart:convert' as convert;
 class CategoryService {
   final String apiUrl = AppConfig.apiUrl;
 
-  Future<List<Category>> all() async {
+  // Construye los headers comunes para todas las peticiones autenticadas.
+  Map<String, String> _headers(String token) => {
+        'Content-Type': 'application/json',
+        // El esquema Bearer es el estándar para JWT en APIs REST.
+        'Authorization': 'Bearer $token',
+      };
+
+  Future<List<Category>> all(String token) async {
     var url = Uri.http(apiUrl, '/product/categories/');
-    var response = await http.get(url);
+    var response = await http.get(url, headers: _headers(token));
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as List<dynamic>;
-
-      List<Category> categories = jsonResponse
-          .map((catJson) => Category.fromJson(catJson))
-          .toList();
-      return categories;
+      return jsonResponse.map((j) => Category.fromJson(j)).toList();
     } else {
       throw Exception('Error al cargar categorías');
     }
   }
 
-  Future<Category> getById(int id) async {
+  Future<Category> getById(int id, String token) async {
     var url = Uri.http(apiUrl, '/product/categories/$id/');
-    var response = await http.get(url);
+    var response = await http.get(url, headers: _headers(token));
     if (response.statusCode == 200) {
-      var jsonResponse = convert.jsonDecode(response.body) as dynamic;
-
-      Category category = Category.fromJson(jsonResponse);
-
-      return category;
+      return Category.fromJson(convert.jsonDecode(response.body));
     } else {
-      throw Exception('Error al cargar categorías');
+      throw Exception('Error al cargar categoría');
     }
   }
 
-  Future<void> save(Category category) async {
+  Future<void> save(Category category, String token) async {
     var url = Uri.http(apiUrl, '/product/categories/');
-
     var response = await http.post(
       url,
       body: convert.jsonEncode(category.toJson()),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(token),
     );
-    if (response.statusCode == 201) {
-      print("Guardado");
-    } else {
-      throw Exception('Error al guardar ');
+    if (response.statusCode != 201) {
+      throw Exception('Error al guardar categoría');
     }
   }
 
-  Future<void> edit(int id, Category category) async {
-    var url = Uri.http(apiUrl, '/product/categories/${id}/');
-
+  Future<void> edit(int id, Category category, String token) async {
+    var url = Uri.http(apiUrl, '/product/categories/$id/');
     var response = await http.put(
       url,
       body: convert.jsonEncode(category.toJson()),
-      headers: {'Content-Type': 'application/json'},
+      headers: _headers(token),
     );
-    if (response.statusCode == 200) {
-      print("Guardado");
-    } else {
-      throw Exception('Error al editar ');
+    if (response.statusCode != 200) {
+      throw Exception('Error al editar categoría');
     }
   }
 
-  Future<void> delete(int id) async {
-    var url = Uri.http(apiUrl, '/product/categories/${id}/');
-
-    var response = await http.delete(url);
-    if (response.statusCode == 204) {
-      print("Eliminado");
-    } else {
-      throw Exception('Error al eliminar ');
+  Future<void> delete(int id, String token) async {
+    var url = Uri.http(apiUrl, '/product/categories/$id/');
+    var response = await http.delete(url, headers: _headers(token));
+    if (response.statusCode != 204) {
+      throw Exception('Error al eliminar categoría');
     }
   }
 }
